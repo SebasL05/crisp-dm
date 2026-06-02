@@ -1,0 +1,20 @@
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Streamlit
+.streamlit/
+
+# macOS
+.DS_Store
+
+# Datos procesados / cachés (si existieran fuera de lo necesario)
+# En este caso, mantenemos 'data' porque es necesario para la app

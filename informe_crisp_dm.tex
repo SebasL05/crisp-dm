@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+
+% -- Formato (Asegúrate de tener el archivo formato.tex en tu Overleaf)
+\input{formato}
+
+% -- Paquetes adicionales
+\usepackage{amsmath,amssymb}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{geometry}
+\usepackage{hyperref}
+
+% -- Comandos extra
+\setlist[itemize]{leftmargin=1.5em}
+
+% -- Datos
+\title{Laboratorio: Aplicación Metodología CRISP-DM}
+\author{Sebastián López}
+\affil{Pontificia Universidad Católica del Ecuador (PUCE)}
+\date{\today}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\maketitle
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Información del Proyecto}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize}
+    \item \textbf{Materia:} CD para Análisis de Casos
+    \item \textbf{Enlace de la aplicación (Netlify / Streamlit):} \url{https://[TU-LINK-AQUI].app/}
+    \item \textbf{Repositorio de GitHub:} \url{https://github.com/[TU-USUARIO]/[TU-REPO].git}
+\end{itemize}
+
+\vspace{0.5cm}
+El presente documento describe el ciclo completo de vida de los datos mediante la metodología \textbf{CRISP-DM} para resolver un problema de clasificación y ranking de Hojas de Vida (CVs) frente a Vacantes laborales.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Fase 1 — Business Understanding (Entendimiento del Negocio)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+    \item \textbf{Objetivo del Negocio:} \\
+    El proceso de selección de personal es lento y manual. El objetivo es reducir el tiempo que los reclutadores invierten leyendo CVs no calificados, construyendo un sistema que ordene automáticamente a los candidatos según su grado de compatibilidad (Match) con una vacante específica.
+    
+    \item \textbf{Criterio de Éxito:} \\
+    El sistema debe ser capaz de posicionar a los mejores candidatos (aquellos que un humano seleccionaría) dentro del Top 5 o Top 10 del ranking sugerido, brindando además interpretabilidad (saber \textit{por qué} el candidato fue seleccionado).
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Fase 2 — Data Understanding (Entendimiento de los Datos)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+    \item \textbf{Recolección y Exploración:} \\
+    Se cuenta con un dataset compuesto por 5 descripciones de vacantes en formato tabular (CSV) y 65 currículums (CVs) en formato de texto no estructurado (.docx). Adicionalmente, se disponía de un archivo de anotaciones de validación humana (ground truth).
+    
+    \item \textbf{Calidad de los Datos:} \\
+    Los documentos presentaban alta variabilidad en estructura y formato. Se identificó la necesidad de aplicar técnicas de Procesamiento de Lenguaje Natural (NLP) para convertir el texto crudo en una representación matemática útil.
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Fase 3 — Data Preparation (Preparación de los Datos)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize}
+    \item \textbf{Extracción de Texto:} Se utilizó la librería \texttt{python-docx} para iterar y extraer el texto plano de los 65 documentos.
+    \item \textbf{Limpieza:} Se convirtieron los textos a minúsculas, se removieron palabras vacías (\textit{stop words}) y signos de puntuación.
+    \item \textbf{Feature Engineering (Ingeniería de Características):} Se definió una lista predefinida de habilidades técnicas (ej. Python, SQL, Agile) mediante expresiones regulares para buscar coincidencias exactas dentro del texto de los candidatos.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Fase 4 — Modeling (Modelado)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+En lugar de un modelo supervisado tradicional de Machine Learning, dadas las limitaciones de tamaño de muestra (65 CVs), se optó por un \textbf{Modelo Híbrido de Ranking (Information Retrieval)} que es robusto y altamente explicable:
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+    \item \textbf{Similitud Semántica (TF-IDF):} Se vectorizó el corpus completo usando \textit{Term Frequency - Inverse Document Frequency} y se calculó la Similitud Coseno entre el texto de la vacante y el CV.
+    \item \textbf{Matching de Skills:} Se calculó la proporción de habilidades técnicas requeridas por la vacante que sí estaban presentes en el CV.
+    \item \textbf{Ponderación Final:} El Score de \textit{Match \%} final se definió con un peso de $20\%$ para TF-IDF (contexto general) y $80\%$ para Skills (requisitos duros).
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Fase 5 — Evaluation (Evaluación)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{itemize}
+    \item \textbf{Métricas Técnicas:} Se midió el modelo frente al juicio de dos anotadores humanos usando la correlación de Spearman. El acuerdo humano era bajo (subjetividad alta en reclutamiento). 
+    \item \textbf{Evaluación del Modelo:} El modelo híbrido superó significativamente la línea base puramente semántica, demostrando ser coherente al posicionar currículums con habilidades técnicas reales requeridas por encima de currículums con simple palabrería similar.
+    \item \textbf{Aprobación de Negocio:} El modelo cumple el criterio de éxito al actuar como un filtro rápido (preselección) y explicar su decisión listando las \textit{Skills Coincidentes}.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Fase 6 — Deployment (Despliegue)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+El sistema fue encapsulado y desplegado como un producto de software interactivo.
+
+\begin{enumerate}[label=\textbf{\arabic*.}]
+    \item \textbf{Arquitectura:} Se desarrolló una aplicación web con \textbf{Streamlit}.
+    \item \textbf{Puesta en Producción:} El código fuente, el archivo \texttt{requirements.txt} y los datos fueron versionados en GitHub, conectados mediante CI/CD a la plataforma de hosting Cloud (Streamlit Cloud / Netlify), garantizando disponibilidad continua.
+    \item \textbf{Uso Práctico:} El usuario final puede seleccionar dinámicamente la vacante y la plataforma generará instantáneamente el ranking del Top 10 candidatos con sus respectivas justificaciones.
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section*{Evidencias de Despliegue}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+A continuación, se presenta la evidencia del despliegue exitoso de la aplicación web en producción.
+
+% --- REEMPLAZA "captura1.png" CON EL NOMBRE DE TU IMAGEN ---
+\begin{figure}[H]
+    \centering
+    % \includegraphics[width=0.85\textwidth]{captura1.png}
+    \caption{Evidencia del despliegue: Interfaz de usuario interactiva y ranking de candidatos.}
+\end{figure}
+
+\end{document}
